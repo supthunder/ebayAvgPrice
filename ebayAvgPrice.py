@@ -19,7 +19,7 @@ def avgPrice(url):
 	itemNames = []
 	# amntRegex = re.compile('\W[0-9]*')
 	# amntRegex = re.compile('\$.(\d+).(\d+)')
-	amntRegex = re.compile('(\d+).(\d+)')
+	amntRegex = re.compile('((\d+).(\d+).(\d+)|(\d+).(\d+))')
 
 	# Only check items from US + ignore "similar items" 
 	count = int((soup.find_all("span",{"class":"rcnt"}))[0].text)
@@ -29,11 +29,19 @@ def avgPrice(url):
 	itemPrice = items[0].find_all("span",{"class": "bold bidsold"})
 	itemName = items[0].find_all("h3",{"class": "lvtitle"})
 
+	print(count)
 	for soldItems in range(0,count):
-		soldPrice.append((re.search(amntRegex,str(itemPrice[soldItems].text).lstrip().rstrip().strip())).group())
+		currentPrice = (re.search(amntRegex,str(itemPrice[soldItems].text).lstrip().rstrip().strip())).group()
+		soldPrice.append(float(currentPrice.replace(",","")))
 		itemNames.append(str(itemName[soldItems].text).encode('utf-8').strip())
+		
+		# Note max of 198
+		if soldItems == 198:
+			break;
 
-	soldPrice = list(map(float, soldPrice))
+	# soldPrice = list(map(float, soldPrice))
+
+
 	print("\nTotal items: ",count)
 	print("Highest: ",max(soldPrice))
 	print("Lowest: ",min(soldPrice))
@@ -51,17 +59,35 @@ def main():
 	# Get Input:
 	print("This script will find the avg sold $ in the US\n")
 	name = input("Item Name: ")
-	name.replace(" ","%20s")
+	# name.replace(" ","%20s")
+	name.replace(" ","%20")
 	# i.e seiko%20skx007j
 
 	print("\nCondition\n\nNew with tags(0)\nNew without tage(1)\nNew with defects(2)")
-	print("Pre-Owned(3)\nNot Specified(4)\n")
+	print("Pre-Owned(3)\nNot Specified(4)\nNew(5)\nUsed(6)")
 	condition = int(input("Enter Correct Number: "))
-	conditionDict = [1000,1500,1750,3000,10]
-	# new is 3 used is 4 smh
-	url = "http://www.ebay.com/sch/i.html?_from=R40&_sacat=0&LH_Complete=1&LH_Sold=1&LH_BIN=1&LH_ItemCondition="+str(conditionDict[condition])+"&_nkw="+name+"&rt=nc&LH_PrefLoc=1&_trksid=p2045573.m1684"
-	
+	conditionDict = [1000,1500,1750,3000,10,3,4]
 
+	print("Choose min/max price, or press ENTER\n")
+	
+	checkMinMax = 0
+	try:
+		minPrice = input("Min price: ")
+	except:
+		checkMinMax = -1
+	try:
+		maxPrice = input("Max price: ")
+	except:
+		checkMinMax = -1
+
+	if minPrice != -1:
+		minMaxString = "&_udlo="+str(minPrice)+"&_udhi="+str(maxPrice)
+	else:
+		minMaxString = ""
+	# new is 3 used is 4 smh
+	url = "http://www.ebay.com/sch/i.html?_from=R40&_sacat=0&LH_Complete=1&LH_Sold=1&LH_BIN=1&LH_ItemCondition="+str(conditionDict[condition])+"&_nkw="+name+"&_ipg=200&rt=nc&LH_PrefLoc=1&_trksid=p2045573.m1684"
+	url += minMaxString
+	print(url)
 	price = avgPrice(url)
 	print("The avg price for item is: $%.2f"%price)
 
