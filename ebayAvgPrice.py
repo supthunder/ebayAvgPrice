@@ -9,6 +9,7 @@ import time
 from random import randint
 from time import gmtime, strftime
 import math
+import statistics
 
 def avgPrice(url):
 	headers = {'User-agent': 'Mozilla/5.0'}
@@ -22,14 +23,23 @@ def avgPrice(url):
 	amntRegex = re.compile('((\d+).(\d+).(\d+)|(\d+).(\d+))')
 
 	# Only check items from US + ignore "similar items" 
-	count = int((soup.find_all("span",{"class":"rcnt"}))[0].text)
+	count = int((soup.find_all("span",{"class":"rcnt"}))[0].text.replace(",",""))
 
 	# all items on page
 	items = soup.find_all("ul",{"id": "ListViewInner"})
-	itemPrice = items[0].find_all("span",{"class": "bold bidsold"})
-	itemName = items[0].find_all("h3",{"class": "lvtitle"})
+	
+	# Exit if too many results!
+	try:
+		itemPrice = items[0].find_all("span",{"class": "bold bidsold"})
+	except Exception as e:
+		print("\nSearch to broad! Too many items!")
+		exit()
+	try:
+		itemName = items[0].find_all("h3",{"class": "lvtitle"})
+	except:
+		print("\nSearch to broad! Too many items!")
+		exit()
 
-	print(count)
 	for soldItems in range(0,count):
 		currentPrice = (re.search(amntRegex,str(itemPrice[soldItems].text).lstrip().rstrip().strip())).group()
 		soldPrice.append(float(currentPrice.replace(",","")))
@@ -52,7 +62,10 @@ def avgPrice(url):
 		f.write(str(itemNames[sales])+" : "+str(soldPrice[sales])+"\n")
 	f.close()
 
-	return (sum(soldPrice) / float(len(soldPrice)))
+	averagePrice = (sum(soldPrice) / float(len(soldPrice)))
+	print("The avg price is: $%.2f"%averagePrice)
+	print("The median price is $%.2f"%statistics.median(soldPrice))
+	print("The mean price is $%.2f"%statistics.mean(soldPrice))
 
 
 def main():
@@ -73,12 +86,12 @@ def main():
 	minPrice = input("Min price: ")
 	maxPrice = input("Max price: ")
 	minMaxString = "&_udlo="+minPrice+"&_udhi="+maxPrice
-	
+
 	# new is 3 used is 4 smh
 	url = "http://www.ebay.com/sch/i.html?_from=R40&_sacat=0&LH_Complete=1&LH_Sold=1&LH_BIN=1&LH_ItemCondition="+str(conditionDict[condition])+"&_nkw="+name+"&_ipg=200&rt=nc&LH_PrefLoc=1&_trksid=p2045573.m1684"
 	url += minMaxString
-	print(url)
-	price = avgPrice(url)
-	print("The avg price for item is: $%.2f"%price)
+	print("Url: \n",url)
+
+	avgPrice(url)
 
 main()
