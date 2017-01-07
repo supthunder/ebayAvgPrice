@@ -70,20 +70,10 @@ def main():
 
 	print("Choose min/max price, or press ENTER\n")
 	
-	checkMinMax = 0
-	try:
-		minPrice = input("Min price: ")
-	except:
-		checkMinMax = -1
-	try:
-		maxPrice = input("Max price: ")
-	except:
-		checkMinMax = -1
-
-	if minPrice != -1:
-		minMaxString = "&_udlo="+str(minPrice)+"&_udhi="+str(maxPrice)
-	else:
-		minMaxString = ""
+	minPrice = input("Min price: ")
+	maxPrice = input("Max price: ")
+	minMaxString = "&_udlo="+minPrice+"&_udhi="+maxPrice
+	
 	# new is 3 used is 4 smh
 	url = "http://www.ebay.com/sch/i.html?_from=R40&_sacat=0&LH_Complete=1&LH_Sold=1&LH_BIN=1&LH_ItemCondition="+str(conditionDict[condition])+"&_nkw="+name+"&_ipg=200&rt=nc&LH_PrefLoc=1&_trksid=p2045573.m1684"
 	url += minMaxString
