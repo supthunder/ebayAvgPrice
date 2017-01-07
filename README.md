@@ -1,5 +1,5 @@
 # ebayAvgPrice
-Calculates the average selling price for an item on eBay
+Calculates the average selling price (mean/median/average) for an item on eBay
 
 # FAQ
 - Checks up to 200 items
